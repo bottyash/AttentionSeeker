@@ -1,0 +1,249 @@
+Sentence transformer visualization - project blueprint
+A step-by-step specification for building an interactive, step-by-step visualizer that walks users through how sentence transformers like MiniLM-L6-v2 encode text into embeddings.
+
+Python + FastAPI
+sentence-transformers
+React / Vite
+D3.js
+MiniLM-L6-v2
+Phase 0
+Understand the architecture you are visualizing
+What MiniLM-L6-v2 is
+MiniLM-L6-v2 is a distilled BERT-style transformer with 6 transformer layers, 12 attention heads per layer, a hidden size of 384, and an output embedding of 384 dimensions. It is trained with a knowledge-distillation objective that mimics a larger teacher model's attention maps, so it punches above its size (22 M parameters). The model lives on Hugging Face as sentence-transformers/all-MiniLM-L6-v2.
+
+The 9 conceptual steps your visualizer must cover
+Step 1 — Raw text input: user types a sentence
+Step 2 — Tokenization: WordPiece splits text into sub-word tokens; special tokens [CLS] and [SEP] are added
+Step 3 — Token embeddings: each token ID maps to a 384-dim learned vector
+Step 4 — Positional embeddings: a position-dependent vector is added to encode word order
+Step 5 — Transformer layer (×6): multi-head self-attention + feed-forward network; each layer refines contextualized representations
+Step 6 — Attention weight heatmap: for each head show which token pairs attend to each other
+Step 7 — Mean pooling: all token vectors at the last layer are averaged to one 384-dim sentence vector
+Step 8 — Normalization: L2-normalize the pooled vector to unit length
+Step 9 — Similarity comparison: cosine similarity between two sentence embeddings shown as a score and 2D projection
+Phase 1
+Environment setup
+1.1 Prerequisites
+Python 3.10+ (3.11 recommended)
+Node.js 18+ with npm or pnpm
+Git for version control
+CUDA 12.x + cuDNN 8.9 (optional — CPU works fine for MiniLM-L6)
+8 GB RAM minimum; 4 GB free disk for model weights and cache
+1.2 Folder structure
+sentence-viz/
+├── backend/
+│   ├── app/
+│   │   ├── main.py          # FastAPI app entry point
+│   │   ├── models.py        # Pydantic request/response schemas
+│   │   ├── encoder.py       # SentenceTransformer wrapper + hook logic
+│   │   └── hooks.py         # PyTorch forward hooks for intermediate states
+│   ├── requirements.txt
+│   └── .env
+└── frontend/
+    ├── src/
+    │   ├── components/
+    │   │   ├── StepStepper.jsx
+    │   │   ├── TokenView.jsx
+    │   │   ├── AttentionHeatmap.jsx
+    │   │   ├── EmbeddingBar.jsx
+    │   │   ├── PoolingAnim.jsx
+    │   │   └── SimilarityView.jsx
+    │   ├── api/client.js
+    │   ├── store/useVizStore.js  # Zustand global state
+    │   ├── App.jsx
+    │   └── main.jsx
+    ├── package.json
+    └── vite.config.js
+1.3 Backend Python dependencies
+fastapi==0.111.0
+uvicorn[standard]==0.29.0
+sentence-transformers==2.7.0
+transformers==4.41.0
+torch==2.3.0          # CPU build; add +cu121 for CUDA
+numpy==1.26.4
+scikit-learn==1.5.0   # for UMAP/t-SNE fallback via PCA
+umap-learn==0.5.6     # 2D projection for embedding space
+pydantic==2.7.1
+python-dotenv==1.0.1
+Install with: pip install -r requirements.txt
+
+1.4 Frontend dependencies
+npm create vite@latest frontend -- --template react
+cd frontend
+npm install
+npm install zustand axios d3 @visx/heatmap @visx/scale
+npm install tailwindcss @tailwindcss/vite   # optional utility CSS
+npm install framer-motion                   # step transition animations
+Phase 2
+Backend — model loading and intermediate state extraction
+2.1 Load MiniLM-L6-v2 with sentence-transformers
+In encoder.py, instantiate the model once at startup using SentenceTransformer('all-MiniLM-L6-v2'). Set device='cpu' for portability. Cache the model in a module-level singleton — do not reload per request, as the model is 90 MB and takes ~1.5 s to load.
+
+from sentence_transformers import SentenceTransformer
+import torch
+
+_model = None
+
+def get_model():
+    global _model
+    if _model is None:
+        _model = SentenceTransformer('all-MiniLM-L6-v2', device='cpu')
+    return _model
+2.2 Capture intermediate states via PyTorch forward hooks
+Register a forward hook on each of the 6 BertLayer instances inside the underlying BertModel. Each hook receives the layer output tensor of shape (1, seq_len, 384) and stores it in a dictionary keyed by layer index. Hooks must be removed after inference to avoid memory leaks.
+
+def register_hooks(model):
+    """Returns dict of activations and list of hook handles."""
+    activations = {}
+    handles = []
+    bert = model._modules['0'].auto_model  # the BertModel inside ST
+
+    for i, layer in enumerate(bert.encoder.layer):
+        def make_hook(idx):
+            def hook(module, input, output):
+                # output[0] is the hidden states tensor
+                activations[f'layer_{idx}'] = output[0].detach()
+            return hook
+        handles.append(layer.register_forward_hook(make_hook(i)))
+    return activations, handles
+2.3 Capture attention weights
+BertLayer also outputs attention weights when you pass output_attentions=True to the model's forward() call. Attention weights have shape (batch, num_heads, seq_len, seq_len). You need to intercept the underlying BertModel.forward — do this by setting model._modules['0'].auto_model.config.output_attentions = True before encoding, then extracting outputs.attentions from a manual forward pass.
+
+def encode_with_internals(sentence: str):
+    model = get_model()
+    bert = model._modules['0'].auto_model
+    tokenizer = model._modules['0'].tokenizer
+
+    bert.config.output_attentions = True
+    activations, handles = register_hooks(model)
+
+    inputs = tokenizer(sentence, return_tensors='pt', truncation=True, max_length=128)
+    with torch.no_grad():
+        outputs = bert(**inputs)
+
+    for h in handles:
+        h.remove()
+
+    return {
+        "input_ids":      inputs["input_ids"][0].tolist(),
+        "tokens":         tokenizer.convert_ids_to_tokens(inputs["input_ids"][0]),
+        "token_embeds":   bert.embeddings.word_embeddings(inputs["input_ids"])[0].tolist(),
+        "pos_embeds":     bert.embeddings.position_embeddings(
+                              torch.arange(inputs["input_ids"].shape[1]).unsqueeze(0)
+                          )[0].tolist(),
+        "layer_outputs":  {k: v[0].tolist() for k, v in activations.items()},
+        "attentions":     [a[0].tolist() for a in outputs.attentions],  # list of 6 layers
+        "pooled_embed":   outputs.last_hidden_state[0].mean(dim=0).tolist(),
+    }
+2.4 FastAPI endpoints
+Define these routes in main.py:
+
+POST /encode — accepts {"sentence": "..."}, returns all intermediate states as described above
+POST /similarity — accepts {"sentence_a": "...", "sentence_b": "..."}, returns cosine similarity score + 2D UMAP projection of both embeddings plus 8 reference sentences for context
+GET /health — returns {"status": "ok", "model": "all-MiniLM-L6-v2"}
+Enable CORS for http://localhost:5173 using fastapi.middleware.cors.CORSMiddleware. Run with uvicorn app.main:app --reload --port 8000.
+
+2.5 Payload size consideration
+important
+Six layers × seq_len × 384 floats can reach ~700 KB for a 30-token sentence. Apply these strategies: (a) quantize layer output tensors to float16 using .half().tolist(), halving payload; (b) only send the layer the frontend is currently viewing (add a requested_layer query param); (c) compress with gzip — FastAPI supports GZipMiddleware. For the similarity endpoint, only send the final pooled 384-dim vectors plus the UMAP 2D coordinates.
+
+Phase 3
+Frontend — step-by-step visualizer components
+3.1 Global state with Zustand
+Create a useVizStore store that holds: sentence, loading, currentStep (0–8), data (the full API response), and selectedLayer (0–5). All components read from this store — no prop drilling. On step change, trigger a framer-motion layout animation.
+
+3.2 StepStepper.jsx — navigation shell
+Render a horizontal pill progress bar with 9 numbered steps. Each step has a label (Tokenization, Embedding, etc.) that appears on hover. Clicking a step navigates there only if the API call has completed. Implement a "Next" and "Back" button pair. On mobile, collapse labels and show only dots.
+
+3.3 TokenView.jsx — steps 2 and 3
+Render each token as a coloured pill. Colour-code token types: [CLS] and [SEP] in amber (special), subword continuations (starting with ##) in teal, regular tokens in gray. Show the token ID below each pill. On click, open a side panel showing the raw 384-dim token embedding as a mini bar chart (use D3 to bin the 384 values into 32 buckets and show a histogram).
+
+3.4 AttentionHeatmap.jsx — step 6
+Use @visx/heatmap to render an N×N grid where rows are query tokens and columns are key tokens. Cell colour intensity = attention weight (0 to 1). Provide a head selector (12 heads per layer) and a layer selector (layers 0–5) as tab-style buttons above the heatmap. Hovering a cell displays a tooltip: "[CLS] → cat: 0.342". This is the most complex component — build it last and test with hardcoded mock data first.
+
+3.5 EmbeddingBar.jsx — steps 3, 4, and 7
+Render a horizontal bar chart of the 384 embedding dimensions. Positive values in teal, negative in coral. For steps 3 and 4, show token embedding and positional embedding side-by-side with a third row showing their sum (the combined input embedding). For step 7, animate the per-token bars collapsing into one averaged bar using framer-motion layout animations. Provide a "zoom" mode that expands a 48-dimension window.
+
+3.6 SimilarityView.jsx — step 9
+Accept two sentences from the user. Call POST /similarity. Render: (a) a large circular dial showing cosine similarity (–1 to 1) like a speedometer using D3 arc; (b) a 2D scatterplot using UMAP coordinates — plot both sentences as large dots plus 8 reference sentences as small dots with labels, so the user can see how meaning clusters in embedding space. Use D3 zoom/pan on the scatterplot.
+
+Phase 4
+Wiring API calls and error handling
+4.1 API client in frontend
+Create src/api/client.js using axios with a base URL from import.meta.env.VITE_API_URL (defaults to http://localhost:8000). Wrap all calls in try/catch. On 422 Unprocessable Entity (sentence too long), display an inline error: "Sentence exceeds 128 tokens — please shorten it."
+
+4.2 Loading skeleton
+While the API responds (~300–800 ms on CPU), show animated skeleton placeholders for each component matching its expected shape — a row of pill-shaped skeletons for TokenView, a faint grid for AttentionHeatmap. Use CSS @keyframes shimmer (background-position animation) — no external library needed.
+
+4.3 Edge cases to handle explicitly
+Empty string input: disable the encode button and show "Type a sentence to begin"
+Single-word input: tokenization may produce only [CLS], token, [SEP] — all views must render cleanly with N=3
+Very long sentences (>100 tokens): warn the user that the model truncates at 128 and show a token count badge in real time using the tokenizer's vocabulary (load a tokenizer JSON from Hugging Face CDN client-side for live counting)
+Network offline: show a banner "Cannot reach backend — check that the server is running on port 8000"
+Phase 5
+Testing strategy
+5.1 Backend unit tests
+Test encode_with_internals on a known sentence — assert token list matches expected WordPiece output for "The cat sat on the mat"
+Assert layer output shapes: each layer tensor must be (seq_len, 384)
+Assert attention tensor shapes: (6 layers, 12 heads, seq_len, seq_len)
+Assert pooled vector has L2 norm ≈ 1.0 after normalization (within 1e-5)
+Use pytest with pytest-asyncio for async FastAPI routes
+5.2 Frontend component tests
+Use Vitest + React Testing Library
+Test TokenView with a mock API payload — assert 5 pills render for a 5-token sentence
+Test AttentionHeatmap — assert the grid has N×N cells when given N tokens
+Test step navigation — clicking "Next" advances currentStep in the store
+Snapshot test the similarity dial at score 0.0, 0.5, and 1.0
+Phase 6
+Polish and accessibility
+6.1 Annotations and explanations
+Each step panel must have an expandable info card (click a ⓘ icon) that explains what is happening in plain language. These are written for someone who does not know ML — for example, step 5 should say "Each of the 6 layers lets every word look at every other word and update its meaning based on context. After 6 rounds, the word 'bank' in 'river bank' looks very different from 'bank' in 'bank account'."
+
+6.2 Keyboard navigation
+Arrow keys advance and retreat steps when the stepper has focus. The attention head selector and layer selector are keyboard-navigable tab panels (role="tablist" + role="tab" with aria-selected). Heatmap cells announce their value to screen readers via aria-label="CLS to cat: 0.342".
+
+6.3 Colour-blind safe palette
+The attention heatmap must not use a red/green diverging scale. Use a sequential blue-purple ramp (low = near-white, high = deep purple). The embedding bar chart uses teal (positive) and coral (negative) which are distinguishable under deuteranopia. Test with the browser's "emulate vision deficiency" tool in Chrome DevTools.
+
+Phase 7
+Deployment
+7.1 Local development
+# Terminal 1 — backend
+cd backend && uvicorn app.main:app --reload --port 8000
+
+# Terminal 2 — frontend
+cd frontend && npm run dev     # Vite dev server on :5173
+7.2 Docker (optional but recommended)
+Write a Dockerfile for the backend using python:3.11-slim. Pre-download model weights into the image with RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('all-MiniLM-L6-v2')". Build the frontend to static files with npm run build and serve via Nginx. Use docker compose to wire both services.
+
+7.3 Hugging Face Spaces (free tier)
+Hugging Face Spaces supports Gradio and Streamlit, but you can also deploy a Docker space with your FastAPI + Vite stack. The free tier has 16 GB RAM and 2 vCPUs, which is sufficient for MiniLM-L6. The model will already be cached from the Hugging Face Hub. This is the fastest path to a shareable demo URL.
+
+Quick reference
+Model facts
+22 M parameters
+6 transformer layers
+12 attention heads per layer
+384-dim hidden + output size
+Max sequence length: 128 tokens
+Vocab size: 30,522 (WordPiece)
+Key libraries
+sentence-transformers 2.7
+transformers 4.41 (Hugging Face)
+FastAPI 0.111 + uvicorn
+React 18 + Vite 5
+D3.js v7 + @visx/heatmap
+umap-learn 0.5 (2D projection)
+Estimated build time
+Phase 1–2 (backend): 1–2 days
+Phase 3 (frontend): 3–5 days
+Phase 4 (wiring): 1 day
+Phase 5 (tests): 1 day
+Phase 6–7 (polish + deploy): 1–2 days
+Total: ~8–11 days solo
+Optional extensions
+Compare MiniLM-L6 vs MiniLM-L12
+Add MPNet or BGE-small model toggle
+Export attention maps as PNG
+Word-level attribution (integrated gradients)
+Live token count using JS tokenizer

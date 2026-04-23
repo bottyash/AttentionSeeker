@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.env
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+*.log
+umap_cache/
+.pytest_cache/
+.mypy_cache/
+
+# Model weights / HuggingFace cache
+*.bin
+*.safetensors
+.cache/
+
+# Node
+node_modules/
+frontend/dist/
+frontend/.vite/
+*.local
+
+# Editor
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+implementation_plan.md
+tagline.txt
