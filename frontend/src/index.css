@@ -615,6 +615,35 @@ body {
   margin-top: 0.5rem;
 }
 
+/* ── Phase 4 edge-case UI ────────────────────────────────────────── */
+.warn-banner {
+  background: rgba(251, 191, 36, 0.08);
+  border: 1px solid var(--amber);
+  color: var(--amber);
+  border-radius: var(--radius-sm);
+  padding: 0.55rem 1rem;
+  font-size: 0.85rem;
+}
+
+.encode-input.warn-border {
+  border-color: var(--amber);
+}
+
+.step0-hint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  color: var(--text-muted);
+  font-size: 0.92rem;
+  padding: 2.5rem 1rem;
+  text-align: center;
+}
+
+.hint-icon {
+  font-size: 1.3rem;
+}
+
 /* ── Shimmer skeleton ────────────────────────────────────────────── */
 @keyframes shimmer {
   0% {

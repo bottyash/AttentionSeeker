@@ -9,6 +9,7 @@ import AttentionHeatmap from "./components/AttentionHeatmap";
 import EmbeddingBar from "./components/EmbeddingBar";
 import PoolingAnim from "./components/PoolingAnim";
 import SimilarityView from "./components/SimilarityView";
+import { TokenSkeleton, HeatmapSkeleton, EmbedSkeleton, PoolSkeleton, GenericSkeleton } from "./components/Skeleton";
 
 const STEP_INFO = [
   {
@@ -49,28 +50,32 @@ const STEP_INFO = [
   },
 ];
 
-function StepPanel({ step }) {
-  const { data } = useVizStore();
+function StepPanel({ step, loading }) {
+  if (loading) {
+    switch (step) {
+      case 1: case 2: return <TokenSkeleton />;
+      case 3: case 4: case 5: return <EmbedSkeleton />;
+      case 6: return <HeatmapSkeleton />;
+      case 7: return <PoolSkeleton />;
+      default: return <GenericSkeleton />;
+    }
+  }
 
   switch (step) {
     case 0:
-      return null; // Input is in the main header, nothing extra
-    case 1:
-    case 2:
-      return <TokenView />;
-    case 3:
-    case 4:
-      return <EmbeddingBar step={step} />;
-    case 5:
-      return <EmbeddingBar step={step} />;
-    case 6:
-      return <AttentionHeatmap />;
-    case 7:
-      return <PoolingAnim />;
-    case 8:
-      return <SimilarityView />;
-    default:
-      return null;
+      return (
+        <div className="step0-hint">
+          <span className="hint-icon">💡</span>
+          Type a sentence above and click <strong>Encode &rarr;</strong> to begin the walkthrough.
+        </div>
+      );
+    case 1: case 2: return <TokenView />;
+    case 3: case 4: return <EmbeddingBar step={step} />;
+    case 5: return <EmbeddingBar step={step} />;
+    case 6: return <AttentionHeatmap />;
+    case 7: return <PoolingAnim />;
+    case 8: return <SimilarityView />;
+    default: return null;
   }
 }
 
@@ -84,19 +89,24 @@ export default function App() {
   const [inputVal, setInputVal] = useState("");
   const [tokenCount, setTokenCount] = useState(0);
 
+  // Live approximate token count (~1.3 tokens/word + 2 special tokens)
+  const approxTokens = Math.round(inputVal.trim().split(/\s+/).filter(Boolean).length * 1.3) + 2;
+  const isLong = inputVal.trim().length > 0 && approxTokens > 100;
+  const isEmpty = inputVal.trim().length === 0;
+
   useEffect(() => {
     checkHealth().then(h => setHealthOk(!!h));
   }, []);
 
   async function handleEncode() {
-    if (!inputVal.trim()) return;
+    if (isEmpty) return;
     setSentence(inputVal.trim());
     setLoading(true);
     setError(null);
     setCurrentStep(1);
     const { data: result, error: err } = await encode(inputVal.trim());
     setLoading(false);
-    if (err) setError(err);
+    if (err) { setError(err); setCurrentStep(0); }
     else {
       setData(result);
       setTokenCount(result.token_count);
@@ -128,16 +138,16 @@ export default function App() {
         <div className="encode-input-wrap">
           <input
             id="sentence-input"
-            className="encode-input"
+            className={`encode-input${isLong ? " warn-border" : ""}`}
             value={inputVal}
             onChange={e => setInputVal(e.target.value)}
-            placeholder="Type a sentence…"
+            placeholder="Type a sentence to begin…"
             maxLength={600}
             onKeyDown={e => e.key === "Enter" && handleEncode()}
           />
-          {inputVal.length > 0 && tokenCount > 0 && (
-            <span className={`token-count-badge ${tokenCount > 100 ? "warn" : ""}`}>
-              ~{tokenCount} tokens
+          {inputVal.length > 0 && (
+            <span className={`token-count-badge${isLong ? " warn" : ""}`}>
+              ~{approxTokens} tokens{isLong ? " ⚠" : ""}
             </span>
           )}
         </div>
@@ -145,11 +155,18 @@ export default function App() {
           id="encode-btn"
           className="encode-btn"
           onClick={handleEncode}
-          disabled={loading || !inputVal.trim()}
+          disabled={loading || isEmpty}
+          title={isEmpty ? "Type a sentence to begin" : ""}
         >
           {loading ? <span className="spinner" /> : "Encode →"}
         </button>
       </div>
+
+      {isLong && (
+        <div className="warn-banner">
+          ⚠ Long input (~{approxTokens} tokens). The model truncates at 128 — consider shortening.
+        </div>
+      )}
 
       {error && <div className="error-banner">{error}</div>}
 
@@ -184,7 +201,7 @@ export default function App() {
           exit={{ opacity: 0, x: -20 }}
           transition={{ duration: 0.3 }}
         >
-          <StepPanel step={currentStep} />
+          <StepPanel step={currentStep} loading={loading} />
         </motion.div>
       </AnimatePresence>
     </div>
