@@ -7,7 +7,7 @@ FROM node:20-alpine AS frontend-builder
 
 WORKDIR /frontend
 COPY frontend/package*.json ./
-RUN npm ci --prefer-offline
+RUN npm ci --legacy-peer-deps
 
 COPY frontend/ .
 # Point at same origin (HF serves everything on one port via proxy)
