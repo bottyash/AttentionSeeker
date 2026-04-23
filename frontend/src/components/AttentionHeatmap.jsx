@@ -1,6 +1,8 @@
 import { useEffect, useRef } from "react";
 import * as d3 from "d3";
 import useVizStore from "../store/useVizStore";
+import InfoCard from "./InfoCard";
+
 
 const LAYERS = [0, 1, 2, 3, 4, 5];
 const HEADS = Array.from({ length: 12 }, (_, i) => i);
@@ -109,7 +111,17 @@ export default function AttentionHeatmap() {
 
     return (
         <div className="attention-heatmap">
-            <h2 className="section-title">Attention Weights — Layer {selectedLayer + 1} / Head {selectedHead + 1}</h2>
+            <div className="section-header">
+                <h2 className="section-title">Attention Weights — Layer {selectedLayer + 1} / Head {selectedHead + 1}</h2>
+                <InfoCard title="What is attention?">
+                    Each of the 6 layers has 12 independent <strong>attention heads</strong>. Each head
+                    learns to look at a different kind of relationship — one head might link pronouns to
+                    their nouns, another might connect verbs to their subjects. The cell at row&nbsp;R,
+                    column&nbsp;C shows how strongly token&nbsp;R is <em>attending to</em> (drawing
+                    information from) token&nbsp;C. All values in a row always sum to 1.0 — it is a
+                    probability distribution over the other tokens.
+                </InfoCard>
+            </div>
             <p className="section-desc">
                 Each cell shows how much a query token (row) attends to a key token (column). Darker = stronger attention.
             </p>

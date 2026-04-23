@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import * as d3 from "d3";
 import useVizStore from "../store/useVizStore";
+import InfoCard from "./InfoCard";
+
 
 function TokenPill({ token, embedding, tokenId }) {
     const [open, setOpen] = useState(false);
@@ -63,13 +65,23 @@ export default function TokenView() {
 
     return (
         <div className="token-view">
-            <h2 className="section-title">Tokenization</h2>
+            <div className="section-header">
+                <h2 className="section-title">Tokenization</h2>
+                <InfoCard title="What is tokenization?">
+                    The model never sees raw text — it sees numbers. WordPiece first breaks your sentence
+                    into <strong>sub-word pieces</strong> so that rare words (like "embeddings") can share
+                    parts with common ones (like "embed"). Two special tokens are always added:{" "}
+                    <span className="chip amber">[CLS]</span> (classification marker, at the start) and{" "}
+                    <span className="chip amber">[SEP]</span> (separator, at the end). Click any token
+                    pill to inspect its raw 384-dimensional numeric representation.
+                </InfoCard>
+            </div>
             <p className="section-desc">
-                WordPiece splits your text into sub-word tokens. Special bookend tokens{" "}
+                WordPiece splits your text into sub-word tokens.{" "}
                 <span className="chip amber">[CLS]</span> and <span className="chip amber">[SEP]</span> are added.
                 Click any token to inspect its 384-dim embedding.
             </p>
-            <div className="pills-row">
+            <div className="pills-row" role="list" aria-label="Token list">
                 {tokens.map((tok, i) => (
                     <TokenPill key={i} token={tok} tokenId={input_ids[i]} embedding={token_embeds[i]} />
                 ))}
@@ -78,3 +90,4 @@ export default function TokenView() {
         </div>
     );
 }
+
