@@ -26,6 +26,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /app
 
+# Environment variables
+ENV TRANSFORMERS_CACHE=/app/model_cache
+ENV SENTENCE_TRANSFORMERS_HOME=/app/model_cache
+ENV NUMBA_DISABLE_JIT=1
+
 # Install Python dependencies
 COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt

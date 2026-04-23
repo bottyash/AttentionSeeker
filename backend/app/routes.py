@@ -2,10 +2,10 @@
 routes.py — FastAPI route definitions
 """
 
-from fastapi import APIRouter, HTTPException, Query
-from typing import Optional
+from fastapi import APIRouter, HTTPException
 import torch
 import numpy as np
+from sklearn.decomposition import PCA
 
 from .models import EncodeRequest, EncodeResponse, TokenEmbedResponse, SimilarityRequest, SimilarityResponse
 from .encoder import encode_with_internals, get_final_embedding
@@ -14,7 +14,6 @@ try:
     import umap
     UMAP_AVAILABLE = True
 except ImportError:
-    from sklearn.decomposition import PCA
     UMAP_AVAILABLE = False
 
 router = APIRouter()
@@ -71,31 +70,44 @@ def similarity(req: SimilarityRequest):
     if not a or not b:
         raise HTTPException(status_code=422, detail="Both sentences must be non-empty.")
 
-    emb_a = get_final_embedding(a)
-    emb_b = get_final_embedding(b)
-    cosine_sim = float(torch.dot(emb_a, emb_b).item())
+    try:
+        emb_a = get_final_embedding(a)
+        emb_b = get_final_embedding(b)
+        cosine_sim = float(torch.dot(emb_a, emb_b).item())
 
-    # Build embedding matrix: [a, b, ...8 references]
-    ref_embeddings = [get_final_embedding(s) for s in REFERENCE_SENTENCES]
-    all_embeddings = torch.stack([emb_a, emb_b] + ref_embeddings).numpy()
+        # Build embedding matrix: [a, b, ...8 references]
+        ref_embeddings = [get_final_embedding(s) for s in REFERENCE_SENTENCES]
+        all_embeddings = torch.stack([emb_a, emb_b] + ref_embeddings).numpy()
 
-    # 2D projection
-    if UMAP_AVAILABLE:
-        reducer = umap.UMAP(n_components=2, random_state=42)
-        coords_2d = reducer.fit_transform(all_embeddings)
-    else:
-        pca = PCA(n_components=2)
-        coords_2d = pca.fit_transform(all_embeddings)
+        # 2D projection — try UMAP first, fall back to PCA
+        coords_2d = None
+        if UMAP_AVAILABLE:
+            try:
+                reducer = umap.UMAP(n_components=2, random_state=42, n_jobs=1)
+                coords_2d = reducer.fit_transform(all_embeddings)
+            except Exception:
+                coords_2d = None  # fall through to PCA
 
-    labels = [a, b] + REFERENCE_SENTENCES
-    is_reference = [False, False] + [True] * len(REFERENCE_SENTENCES)
+        if coords_2d is None:
+            coords_2d = PCA(n_components=2).fit_transform(all_embeddings)
 
-    umap_coords = [
-        {"label": labels[i], "x": float(coords_2d[i][0]), "y": float(coords_2d[i][1]), "is_reference": is_reference[i]}
-        for i in range(len(labels))
-    ]
+        labels = [a, b] + REFERENCE_SENTENCES
+        is_reference = [False, False] + [True] * len(REFERENCE_SENTENCES)
 
-    return SimilarityResponse(
-        cosine_similarity=cosine_sim,
-        umap_coords=umap_coords,
-    )
+        umap_coords = [
+            {
+                "label": labels[i],
+                "x": float(coords_2d[i][0]),
+                "y": float(coords_2d[i][1]),
+                "is_reference": is_reference[i],
+            }
+            for i in range(len(labels))
+        ]
+
+        return SimilarityResponse(
+            cosine_similarity=cosine_sim,
+            umap_coords=umap_coords,
+        )
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
