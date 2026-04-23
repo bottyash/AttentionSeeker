@@ -1,13 +1,29 @@
-# AttentionSeeker
-### *It's not you, it's your embeddings.*
+---
+title: AttentionSeeker
+emoji: 🧠
+colorFrom: indigo
+colorTo: purple
+sdk: docker
+pinned: false
+---
 
-> An interactive, step-by-step visualizer for how sentence transformers encode text into dense vector embeddings.
+# AttentionSeeker
+
+**AttentionSeeker** is a step-by-step, interactive explainer for how sentence transformers turn raw text into dense vector embeddings — built on `all-MiniLM-L6-v2`.
+
+> *It's not you, it's your embeddings.*
 
 ---
 
-## What it does
+## Demo
 
-AttentionSeeker walks you through **9 internal stages** of `all-MiniLM-L6-v2` — from raw text to a normalized 384-dimensional sentence embedding — with live, interactive visualizations at every step.
+> 📸 *Add a GIF or screenshot here — the attention heatmap or UMAP scatter makes a great hero visual.*
+
+---
+
+## The 9 stages
+
+AttentionSeeker walks you through every internal stage of `all-MiniLM-L6-v2` — from raw text to a normalized 384-dimensional sentence embedding — with live, interactive visualizations at each step.
 
 | Step | What you see |
 |------|-------------|
@@ -37,7 +53,7 @@ AttentionSeeker walks you through **9 internal stages** of `all-MiniLM-L6-v2` �
 
 ### Requirements
 
-- Python **3.12** (PyTorch does **not** support Python 3.14 yet)
+- Python **3.12** — PyTorch does not yet support 3.13+
 - Node.js ≥ 18
 
 ### Backend
@@ -45,17 +61,21 @@ AttentionSeeker walks you through **9 internal stages** of `all-MiniLM-L6-v2` �
 ```bash
 cd backend
 
-# Create and activate a Python 3.12 venv
-py -3.12 -m venv .venv
-.venv\Scripts\activate          # Windows
-# source .venv/bin/activate     # macOS/Linux
+# Create and activate a Python 3.12 virtual environment
+python3.12 -m venv .venv
+
+source .venv/bin/activate       # macOS / Linux
+# .venv\Scripts\activate        # Windows
+
+# conda alternative:
+# conda create -n attentionseeker python=3.12 && conda activate attentionseeker
 
 pip install -r requirements.txt
 
 python -m uvicorn app.main:app --reload --port 8000
 ```
 
-The first run downloads `all-MiniLM-L6-v2` (~90 MB). Wait for `✅ Model ready.` before encoding.
+The first run downloads `all-MiniLM-L6-v2` (~90 MB). Wait for `✅ Model ready.` before sending requests.
 
 ### Frontend
 
@@ -66,6 +86,19 @@ npm run dev
 ```
 
 Open **http://localhost:5173**
+
+### Tests
+
+```bash
+# Backend — route tests run without torch via a conftest stub;
+# encoder unit tests auto-skip when torch is unavailable
+cd backend
+pytest tests/ -v
+
+# Frontend
+cd frontend
+npm run test
+```
 
 ---
 
@@ -96,7 +129,7 @@ AttentionSeeker/
 
 ---
 
-## API
+## API reference
 
 ### `GET /health`
 ```json
@@ -105,9 +138,9 @@ AttentionSeeker/
 
 ### `POST /encode`
 ```json
-{ "sentence": "Hello world", "layer": 3 }   // layer is optional
+{ "sentence": "Hello world", "layer": 3 }
 ```
-Returns tokens, embeddings, hidden states, attention weights, and pooled vector.
+`layer` is optional. Returns tokens, embeddings, hidden states, attention weights, and the pooled vector.
 
 ### `POST /similarity`
 ```json
@@ -117,16 +150,6 @@ Returns cosine similarity score + 2D UMAP/PCA projection of 10 sentences.
 
 ---
 
-## Tests
+## License
 
-```bash
-# Backend (requires Python 3.12 venv with requirements installed)
-cd backend
-pytest tests/ -v
-
-# Frontend
-cd frontend
-npm run test
-```
-
-Backend route tests run without torch via a conftest stub. Encoder unit tests auto-skip when torch isn't available.
+MIT · contributions welcome via pull request.
