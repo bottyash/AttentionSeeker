@@ -16,7 +16,12 @@ def get_model() -> SentenceTransformer:
     global _model
     if _model is None:
         _model = SentenceTransformer("all-MiniLM-L6-v2", device="cpu")
+        # Force eager attention — SDPA (default in newer transformers) does not
+        # support output_attentions=True which we need for the heatmap.
+        bert = _get_bert(_model)
+        bert.config._attn_implementation = "eager"
     return _model
+
 
 
 def _get_bert(model: SentenceTransformer):
