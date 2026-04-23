@@ -1,43 +1,47 @@
 import axios from "axios";
 
-const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+// When VITE_API_BASE_URL is empty (HF Spaces), calls go to same origin.
+// In local dev, set it to http://localhost:8000 in .env.local.
+const BASE = import.meta.env.VITE_API_BASE_URL ?? "";
 
-const client = axios.create({ baseURL: BASE_URL });
+const api = axios.create({
+    baseURL: BASE,
+    timeout: 60000,
+    headers: { "Content-Type": "application/json" },
+});
 
-export async function encode(sentence, layer = null) {
-    try {
-        const res = await client.post("/encode", { sentence, layer });
-        return { data: res.data, error: null };
-    } catch (err) {
-        const detail = err.response?.data?.detail;
-        if (err.response?.status === 422) {
-            return { data: null, error: detail || "Sentence exceeds 128 tokens — please shorten it." };
-        }
-        if (!err.response) {
-            return { data: null, error: "Cannot reach backend — check that the server is running on port 8000." };
-        }
-        return { data: null, error: detail || "Unexpected server error." };
-    }
-}
-
-export async function getSimilarity(sentence_a, sentence_b) {
-    try {
-        const res = await client.post("/similarity", { sentence_a, sentence_b });
-        return { data: res.data, error: null };
-    } catch (err) {
-        const detail = err.response?.data?.detail;
-        if (!err.response) {
-            return { data: null, error: "Cannot reach backend — check that the server is running on port 8000." };
-        }
-        return { data: null, error: detail || "Unexpected server error." };
-    }
+function fmtError(err) {
+    if (!err.response) return "Cannot reach backend — check that the server is running on port 8000.";
+    const d = err.response.data;
+    if (err.response.status === 422) return "Invalid input — please enter a non-empty sentence.";
+    return d?.detail ?? `Server error ${err.response.status}`;
 }
 
 export async function checkHealth() {
     try {
-        const res = await client.get("/health");
-        return res.data;
+        const r = await api.get("/health");
+        return r.data;
     } catch {
         return null;
+    }
+}
+
+export async function encode(sentence, layer = null) {
+    try {
+        const payload = { sentence };
+        if (layer !== null) payload.layer = layer;
+        const r = await api.post("/encode", payload);
+        return { data: r.data, error: null };
+    } catch (err) {
+        return { data: null, error: fmtError(err) };
+    }
+}
+
+export async function similarity(sentenceA, sentenceB) {
+    try {
+        const r = await api.post("/similarity", { sentence_a: sentenceA, sentence_b: sentenceB });
+        return { data: r.data, error: null };
+    } catch (err) {
+        return { data: null, error: fmtError(err) };
     }
 }
