@@ -56,7 +56,7 @@ RUN printf 'server {\n\
         proxy_set_header Host $host;\n\
         proxy_read_timeout 120s;\n\
     }\n\
-}\n' > /etc/nginx/sites-available/default
+}\n' > /etc/nginx/conf.d/default.conf
 
 # Supervisor: manage nginx + uvicorn together
 RUN printf '[supervisord]\nnodaemon=true\n\n\
