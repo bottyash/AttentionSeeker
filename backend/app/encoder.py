@@ -78,9 +78,9 @@ def encode_with_internals(sentence: str, requested_layer: int | None = None) -> 
     # ── Layer outputs ──────────────────────────────────────────────────────────
     if requested_layer is not None:
         key = f"layer_{requested_layer}"
-        layer_outputs = {key: activations[key][0].tolist()}
+        layer_outputs = {key: activations[key].tolist()}
     else:
-        layer_outputs = {k: v[0].tolist() for k, v in activations.items()}
+        layer_outputs = {k: v.tolist() for k, v in activations.items()}
 
     # ── Mean pooling + L2 norm ─────────────────────────────────────────────────
     last_hidden = outputs.last_hidden_state[0]               # (seq_len, 384)
