@@ -47,9 +47,13 @@ export async function similarity(sentenceA, sentenceB) {
 }
 
 export const getSimilarity = async (sentenceA, sentenceB) => {
-    const response = await api.post("/similarity", {
-        sentence_a: sentenceA,
-        sentence_b: sentenceB,
-    });
-    return response.data;
+    try {
+        const response = await api.post("/similarity", {
+            sentence_a: sentenceA,
+            sentence_b: sentenceB,
+        });
+        return { data: response.data, error: null };  // ✅ matches { data, error }
+    } catch (err) {
+        return { data: null, error: fmtError(err) };
+    }
 };
