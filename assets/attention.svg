@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 200" width="340" height="200">
+  <defs>
+    <style>
+      @keyframes heat {
+        0%,100% { opacity: 0.3; }
+        50%      { opacity: 1.0; }
+      }
+      /* 6×6 = 36 cells, staggered 0.08s each */
+      .c00{animation:heat 2.4s ease-in-out infinite;animation-delay:0.00s}
+      .c01{animation:heat 2.4s ease-in-out infinite;animation-delay:0.08s}
+      .c02{animation:heat 2.4s ease-in-out infinite;animation-delay:0.16s}
+      .c03{animation:heat 2.4s ease-in-out infinite;animation-delay:0.24s}
+      .c04{animation:heat 2.4s ease-in-out infinite;animation-delay:0.32s}
+      .c05{animation:heat 2.4s ease-in-out infinite;animation-delay:0.40s}
+      .c10{animation:heat 2.4s ease-in-out infinite;animation-delay:0.48s}
+      .c11{animation:heat 2.4s ease-in-out infinite;animation-delay:0.56s}
+      .c12{animation:heat 2.4s ease-in-out infinite;animation-delay:0.64s}
+      .c13{animation:heat 2.4s ease-in-out infinite;animation-delay:0.72s}
+      .c14{animation:heat 2.4s ease-in-out infinite;animation-delay:0.80s}
+      .c15{animation:heat 2.4s ease-in-out infinite;animation-delay:0.88s}
+      .c20{animation:heat 2.4s ease-in-out infinite;animation-delay:0.96s}
+      .c21{animation:heat 2.4s ease-in-out infinite;animation-delay:1.04s}
+      .c22{animation:heat 2.4s ease-in-out infinite;animation-delay:1.12s}
+      .c23{animation:heat 2.4s ease-in-out infinite;animation-delay:1.20s}
+      .c24{animation:heat 2.4s ease-in-out infinite;animation-delay:1.28s}
+      .c25{animation:heat 2.4s ease-in-out infinite;animation-delay:1.36s}
+      .c30{animation:heat 2.4s ease-in-out infinite;animation-delay:1.44s}
+      .c31{animation:heat 2.4s ease-in-out infinite;animation-delay:1.52s}
+      .c32{animation:heat 2.4s ease-in-out infinite;animation-delay:1.60s}
+      .c33{animation:heat 2.4s ease-in-out infinite;animation-delay:1.68s}
+      .c34{animation:heat 2.4s ease-in-out infinite;animation-delay:1.76s}
+      .c35{animation:heat 2.4s ease-in-out infinite;animation-delay:1.84s}
+      .c40{animation:heat 2.4s ease-in-out infinite;animation-delay:1.92s}
+      .c41{animation:heat 2.4s ease-in-out infinite;animation-delay:2.00s}
+      .c42{animation:heat 2.4s ease-in-out infinite;animation-delay:2.08s}
+      .c43{animation:heat 2.4s ease-in-out infinite;animation-delay:2.16s}
+      .c44{animation:heat 2.4s ease-in-out infinite;animation-delay:2.24s}
+      .c45{animation:heat 2.4s ease-in-out infinite;animation-delay:2.32s}
+      .c50{animation:heat 2.4s ease-in-out infinite;animation-delay:2.40s}
+      .c51{animation:heat 2.4s ease-in-out infinite;animation-delay:2.48s}
+      .c52{animation:heat 2.4s ease-in-out infinite;animation-delay:2.56s}
+      .c53{animation:heat 2.4s ease-in-out infinite;animation-delay:2.64s}
+      .c54{animation:heat 2.4s ease-in-out infinite;animation-delay:2.72s}
+      .c55{animation:heat 2.4s ease-in-out infinite;animation-delay:2.80s}
+      .lbl{font-family:'Segoe UI',Arial,sans-serif;font-size:9px;fill:#94a3b8;text-anchor:middle;}
+      .ttl{font-family:'Segoe UI',Arial,sans-serif;font-size:12px;font-weight:bold;fill:#e2e8f0;text-anchor:middle;}
+    </style>
+  </defs>
+  <rect width="340" height="200" fill="#09080f" rx="12"/>
+  <text class="ttl" x="170" y="22">Attention Heatmap</text>
+  <text class="lbl" x="170" y="38">Layer 3 · Head 7 · 6 tokens</text>
+
+  <!-- Token axis labels -->
+  <text class="lbl" x="100" y="56">[CLS]</text>
+  <text class="lbl" x="136" y="56">the</text>
+  <text class="lbl" x="172" y="56">cat</text>
+  <text class="lbl" x="208" y="56">sat</text>
+  <text class="lbl" x="244" y="56">on</text>
+  <text class="lbl" x="280" y="56">[SEP]</text>
+
+  <!-- Intensity palette: high=deep purple, low=near-black -->
+  <!-- Row 0 -->
+  <rect class="c00" x="82" y="60"  width="32" height="22" fill="#7c3aed" rx="2"/>
+  <rect class="c01" x="118" y="60" width="32" height="22" fill="#6d28d9" rx="2"/>
+  <rect class="c02" x="154" y="60" width="32" height="22" fill="#4c1d95" rx="2"/>
+  <rect class="c03" x="190" y="60" width="32" height="22" fill="#7c3aed" rx="2"/>
+  <rect class="c04" x="226" y="60" width="32" height="22" fill="#5b21b6" rx="2"/>
+  <rect class="c05" x="262" y="60" width="32" height="22" fill="#8b5cf6" rx="2"/>
+  <!-- Row 1 -->
+  <rect class="c10" x="82" y="85"  width="32" height="22" fill="#5b21b6" rx="2"/>
+  <rect class="c11" x="118" y="85" width="32" height="22" fill="#8b5cf6" rx="2"/>
+  <rect class="c12" x="154" y="85" width="32" height="22" fill="#7c3aed" rx="2"/>
+  <rect class="c13" x="190" y="85" width="32" height="22" fill="#4c1d95" rx="2"/>
+  <rect class="c14" x="226" y="85" width="32" height="22" fill="#6d28d9" rx="2"/>
+  <rect class="c15" x="262" y="85" width="32" height="22" fill="#8b5cf6" rx="2"/>
+  <!-- Row 2 -->
+  <rect class="c20" x="82" y="110"  width="32" height="22" fill="#4c1d95" rx="2"/>
+  <rect class="c21" x="118" y="110" width="32" height="22" fill="#7c3aed" rx="2"/>
+  <rect class="c22" x="154" y="110" width="32" height="22" fill="#a78bfa" rx="2"/>
+  <rect class="c23" x="190" y="110" width="32" height="22" fill="#8b5cf6" rx="2"/>
+  <rect class="c24" x="226" y="110" width="32" height="22" fill="#5b21b6" rx="2"/>
+  <rect class="c25" x="262" y="110" width="32" height="22" fill="#6d28d9" rx="2"/>
+  <!-- Row 3 -->
+  <rect class="c30" x="82" y="135"  width="32" height="22" fill="#8b5cf6" rx="2"/>
+  <rect class="c31" x="118" y="135" width="32" height="22" fill="#5b21b6" rx="2"/>
+  <rect class="c32" x="154" y="135" width="32" height="22" fill="#6d28d9" rx="2"/>
+  <rect class="c33" x="190" y="135" width="32" height="22" fill="#a78bfa" rx="2"/>
+  <rect class="c34" x="226" y="135" width="32" height="22" fill="#7c3aed" rx="2"/>
+  <rect class="c35" x="262" y="135" width="32" height="22" fill="#4c1d95" rx="2"/>
+  <!-- Row 4 -->
+  <rect class="c40" x="82" y="160"  width="32" height="14" fill="#6d28d9" rx="2"/>
+  <rect class="c41" x="118" y="160" width="32" height="14" fill="#4c1d95" rx="2"/>
+  <rect class="c42" x="154" y="160" width="32" height="14" fill="#8b5cf6" rx="2"/>
+  <rect class="c43" x="190" y="160" width="32" height="14" fill="#7c3aed" rx="2"/>
+  <rect class="c44" x="226" y="160" width="32" height="14" fill="#a78bfa" rx="2"/>
+  <rect class="c45" x="262" y="160" width="32" height="14" fill="#5b21b6" rx="2"/>
+</svg>

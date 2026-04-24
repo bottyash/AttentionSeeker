@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 460 130" width="460" height="130">
+  <defs>
+    <style>
+      @keyframes bar-grow {
+        0%   { transform: scaleY(0.2); opacity: 0.4; }
+        50%  { transform: scaleY(1.0); opacity: 1.0; }
+        100% { transform: scaleY(0.2); opacity: 0.4; }
+      }
+      @keyframes collapse {
+        0%   { opacity: 0.3; transform: translateX(0); }
+        40%  { opacity: 1.0; transform: translateX(0); }
+        80%  { opacity: 0.8; transform: translateX(30px); }
+        100% { opacity: 0.3; transform: translateX(0); }
+      }
+      .bar { transform-origin: bottom; animation: bar-grow 1.8s ease-in-out infinite; }
+      .t1  { animation-delay: 0.00s; }
+      .t2  { animation-delay: 0.10s; }
+      .t3  { animation-delay: 0.20s; }
+      .t4  { animation-delay: 0.30s; }
+      .t5  { animation-delay: 0.40s; }
+      .t6  { animation-delay: 0.50s; }
+      .t7  { animation-delay: 0.60s; }
+      .t8  { animation-delay: 0.70s; }
+      .arrow-anim { animation: collapse 2.4s ease-in-out infinite; }
+      .ttl  { font-family:'Segoe UI',Arial,sans-serif; font-size:12px; font-weight:bold; fill:#e2e8f0; text-anchor:middle; }
+      .sub  { font-family:'Segoe UI',Arial,sans-serif; font-size:9px; fill:#94a3b8; text-anchor:middle; }
+      .tok  { font-family:'JetBrains Mono',monospace,Arial; font-size:9px; fill:#818cf8; text-anchor:middle; }
+    </style>
+  </defs>
+  <rect width="460" height="130" fill="#09080f" rx="12"/>
+  <text class="ttl" x="115" y="20">Token Embeddings</text>
+  <text class="sub" x="115" y="32">384-dim vectors per token</text>
+
+  <!-- 8 mini bar charts for 8 tokens -->
+  <!-- each group: 5 bars, width=4, gap=2, so group width=34; spacing 28 between groups -->
+  <!-- Token 1: x=14 -->
+  <g>
+    <rect class="bar t1" x="14" y="50" width="4" height="55" fill="#6366f1"/>
+    <rect class="bar t2" x="20" y="65" width="4" height="40" fill="#818cf8"/>
+    <rect class="bar t3" x="26" y="45" width="4" height="60" fill="#a5b4fc"/>
+    <rect class="bar t4" x="32" y="58" width="4" height="47" fill="#6366f1"/>
+    <rect class="bar t5" x="38" y="70" width="4" height="35" fill="#818cf8"/>
+    <text class="tok" x="26" y="116">[CLS]</text>
+  </g>
+  <!-- Token 2 -->
+  <g>
+    <rect class="bar t2" x="55" y="60" width="4" height="45" fill="#2dd4bf"/>
+    <rect class="bar t3" x="61" y="48" width="4" height="57" fill="#34d399"/>
+    <rect class="bar t4" x="67" y="72" width="4" height="33" fill="#2dd4bf"/>
+    <rect class="bar t5" x="73" y="55" width="4" height="50" fill="#34d399"/>
+    <rect class="bar t1" x="79" y="64" width="4" height="41" fill="#2dd4bf"/>
+    <text class="tok" x="67" y="116">the</text>
+  </g>
+  <!-- Token 3 -->
+  <g>
+    <rect class="bar t3" x="96" y="52" width="4" height="53" fill="#818cf8"/>
+    <rect class="bar t4" x="102" y="68" width="4" height="37" fill="#6366f1"/>
+    <rect class="bar t5" x="108" y="44" width="4" height="61" fill="#a5b4fc"/>
+    <rect class="bar t1" x="114" y="62" width="4" height="43" fill="#818cf8"/>
+    <rect class="bar t2" x="120" y="55" width="4" height="50" fill="#6366f1"/>
+    <text class="tok" x="108" y="116">cat</text>
+  </g>
+  <!-- Token 4 -->
+  <g>
+    <rect class="bar t4" x="137" y="58" width="4" height="47" fill="#fbbf24"/>
+    <rect class="bar t5" x="143" y="46" width="4" height="59" fill="#f59e0b"/>
+    <rect class="bar t1" x="149" y="70" width="4" height="35" fill="#fbbf24"/>
+    <rect class="bar t2" x="155" y="54" width="4" height="51" fill="#f59e0b"/>
+    <rect class="bar t3" x="161" y="63" width="4" height="42" fill="#fbbf24"/>
+    <text class="tok" x="149" y="116">sat</text>
+  </g>
+
+  <!-- Arrow → Pool -->
+  <text class="arrow-anim" x="202" y="72" style="font-size:26px;fill:#4f46e5;font-weight:bold;">→</text>
+
+  <!-- Pooled result (single wider bar group) -->
+  <text class="ttl" x="340" y="20">Pooled Embedding</text>
+  <text class="sub" x="340" y="32">384-dim · L2 normalized</text>
+  <g>
+    <rect class="bar t1" x="246" y="48" width="5" height="57" fill="#6366f1" opacity="0.8"/>
+    <rect class="bar t2" x="253" y="60" width="5" height="45" fill="#818cf8" opacity="0.8"/>
+    <rect class="bar t3" x="260" y="42" width="5" height="63" fill="#a5b4fc" opacity="0.8"/>
+    <rect class="bar t4" x="267" y="55" width="5" height="50" fill="#6366f1" opacity="0.8"/>
+    <rect class="bar t5" x="274" y="68" width="5" height="37" fill="#818cf8" opacity="0.8"/>
+    <rect class="bar t1" x="281" y="50" width="5" height="55" fill="#a5b4fc" opacity="0.8"/>
+    <rect class="bar t2" x="288" y="63" width="5" height="42" fill="#6366f1" opacity="0.8"/>
+    <rect class="bar t3" x="295" y="46" width="5" height="59" fill="#818cf8" opacity="0.8"/>
+    <rect class="bar t4" x="302" y="57" width="5" height="48" fill="#a5b4fc" opacity="0.8"/>
+    <rect class="bar t5" x="309" y="70" width="5" height="35" fill="#6366f1" opacity="0.8"/>
+    <rect class="bar t1" x="316" y="53" width="5" height="52" fill="#818cf8" opacity="0.8"/>
+    <rect class="bar t2" x="323" y="44" width="5" height="61" fill="#a5b4fc" opacity="0.8"/>
+    <rect class="bar t3" x="330" y="66" width="5" height="39" fill="#6366f1" opacity="0.8"/>
+    <rect class="bar t4" x="337" y="49" width="5" height="56" fill="#818cf8" opacity="0.8"/>
+    <rect class="bar t5" x="344" y="60" width="5" height="45" fill="#a5b4fc" opacity="0.8"/>
+    <text class="tok" x="295" y="116">sentence vector →  cos sim</text>
+  </g>
+</svg>

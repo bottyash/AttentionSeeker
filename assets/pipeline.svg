@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 120" width="860" height="120">
+  <defs>
+    <style>
+      .step-box { rx: 8; ry: 8; }
+      .label { font-family: 'Segoe UI', Arial, sans-serif; font-size: 10px; fill: #e2e8f0; text-anchor: middle; }
+      .num   { font-family: 'Segoe UI', Arial, sans-serif; font-size: 13px; font-weight: bold; fill: #818cf8; text-anchor: middle; }
+      .arrow { stroke: #4f46e5; stroke-width: 2; fill: none; marker-end: url(#arrowhead); }
+
+      @keyframes pulse {
+        0%, 100% { opacity: 0.55; }
+        50%       { opacity: 1; }
+      }
+      .b1 { animation: pulse 2.0s ease-in-out infinite; animation-delay: 0.0s; }
+      .b2 { animation: pulse 2.0s ease-in-out infinite; animation-delay: 0.2s; }
+      .b3 { animation: pulse 2.0s ease-in-out infinite; animation-delay: 0.4s; }
+      .b4 { animation: pulse 2.0s ease-in-out infinite; animation-delay: 0.6s; }
+      .b5 { animation: pulse 2.0s ease-in-out infinite; animation-delay: 0.8s; }
+      .b6 { animation: pulse 2.0s ease-in-out infinite; animation-delay: 1.0s; }
+      .b7 { animation: pulse 2.0s ease-in-out infinite; animation-delay: 1.2s; }
+      .b8 { animation: pulse 2.0s ease-in-out infinite; animation-delay: 1.4s; }
+      .b9 { animation: pulse 2.0s ease-in-out infinite; animation-delay: 1.6s; }
+
+      @keyframes flow {
+        0%   { stroke-dashoffset: 24; }
+        100% { stroke-dashoffset: 0; }
+      }
+      .flowing { stroke-dasharray: 6 4; animation: flow 0.8s linear infinite; }
+    </style>
+    <marker id="arrowhead" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#4f46e5"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="860" height="120" fill="#09080f" rx="12"/>
+
+  <!-- Steps: x positions for 9 boxes -->
+  <!-- box width=76, gap=18, start=10 -->
+  <!-- Centers: 10+38=48, 48+76+18=142, ..., step=(76+18)=94 -->
+
+  <!-- Arrows between boxes -->
+  <line class="arrow flowing" x1="86"  y1="60" x2="104" y2="60"/>
+  <line class="arrow flowing" x1="180" y1="60" x2="198" y2="60"/>
+  <line class="arrow flowing" x1="274" y1="60" x2="292" y2="60"/>
+  <line class="arrow flowing" x1="368" y1="60" x2="386" y2="60"/>
+  <line class="arrow flowing" x1="462" y1="60" x2="480" y2="60"/>
+  <line class="arrow flowing" x1="556" y1="60" x2="574" y2="60"/>
+  <line class="arrow flowing" x1="650" y1="60" x2="668" y2="60"/>
+  <line class="arrow flowing" x1="744" y1="60" x2="762" y2="60"/>
+
+  <!-- Step boxes -->
+  <!-- 1 -->
+  <rect class="step-box b1" x="10"  y="28" width="76" height="64" fill="#161428" stroke="#4f46e5" stroke-width="1.5"/>
+  <text class="num" x="48"  y="52">1</text>
+  <text class="label" x="48"  y="67">Raw</text>
+  <text class="label" x="48"  y="80">Text</text>
+
+  <!-- 2 -->
+  <rect class="step-box b2" x="104" y="28" width="76" height="64" fill="#161428" stroke="#6366f1" stroke-width="1.5"/>
+  <text class="num" x="142" y="52">2</text>
+  <text class="label" x="142" y="67">Token-</text>
+  <text class="label" x="142" y="80">ization</text>
+
+  <!-- 3 -->
+  <rect class="step-box b3" x="198" y="28" width="76" height="64" fill="#161428" stroke="#818cf8" stroke-width="1.5"/>
+  <text class="num" x="236" y="52">3</text>
+  <text class="label" x="236" y="67">Token</text>
+  <text class="label" x="236" y="80">Embeds</text>
+
+  <!-- 4 -->
+  <rect class="step-box b4" x="292" y="28" width="76" height="64" fill="#161428" stroke="#a5b4fc" stroke-width="1.5"/>
+  <text class="num" x="330" y="52">4</text>
+  <text class="label" x="330" y="67">Pos.</text>
+  <text class="label" x="330" y="80">Embeds</text>
+
+  <!-- 5 -->
+  <rect class="step-box b5" x="386" y="28" width="76" height="64" fill="#161428" stroke="#c4b5fd" stroke-width="1.5"/>
+  <text class="num" x="424" y="52">5</text>
+  <text class="label" x="424" y="67">Layers</text>
+  <text class="label" x="424" y="80">×6</text>
+
+  <!-- 6 -->
+  <rect class="step-box b6" x="480" y="28" width="76" height="64" fill="#161428" stroke="#a78bfa" stroke-width="1.5"/>
+  <text class="num" x="518" y="52">6</text>
+  <text class="label" x="518" y="67">Attention</text>
+  <text class="label" x="518" y="80">Weights</text>
+
+  <!-- 7 -->
+  <rect class="step-box b7" x="574" y="28" width="76" height="64" fill="#161428" stroke="#2dd4bf" stroke-width="1.5"/>
+  <text class="num" x="612" y="52">7</text>
+  <text class="label" x="612" y="67">Mean</text>
+  <text class="label" x="612" y="80">Pooling</text>
+
+  <!-- 8 -->
+  <rect class="step-box b8" x="668" y="28" width="76" height="64" fill="#161428" stroke="#34d399" stroke-width="1.5"/>
+  <text class="num" x="706" y="52">8</text>
+  <text class="label" x="706" y="67">L2</text>
+  <text class="label" x="706" y="80">Norm</text>
+
+  <!-- 9 -->
+  <rect class="step-box b9" x="762" y="28" width="88" height="64" fill="#161428" stroke="#fbbf24" stroke-width="1.5"/>
+  <text class="num" x="806" y="52">9</text>
+  <text class="label" x="806" y="67">Similarity</text>
+  <text class="label" x="806" y="80">Score</text>
+</svg>
