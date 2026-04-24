@@ -77,32 +77,32 @@ AttentionSeeker walks you through **9 internal stages** of a sentence transforme
 
 ```
 Browser (React 18 + Vite)
-  â”‚
-  â”‚  POST /encode  { sentence, layer? }
-  â”‚  POST /similarity  { sentence_a, sentence_b }
-  â–¼
+  |
+  |  POST /encode  { sentence, layer? }
+  |  POST /similarity  { sentence_a, sentence_b }
+  v
 FastAPI  (Python 3.12)
-  â”œâ”€â”€ Lifespan model loader (singleton SentenceTransformer)
-  â”œâ”€â”€ PyTorch forward hooks on each BertLayer â†’ hidden states
-  â”œâ”€â”€ output_attentions=True (eager mode) â†’ attention weights
-  â”œâ”€â”€ Mean pooling + L2 norm â†’ pooled_embed
-  â””â”€â”€ UMAP / PCA â†’ 2D projection for scatter plot
+  |-- Lifespan model loader (singleton SentenceTransformer)
+  |-- PyTorch forward hooks on each BertLayer -> hidden states
+  |-- output_attentions=True (eager mode) -> attention weights
+  |-- Mean pooling + L2 norm -> pooled_embed
+  `-- UMAP / PCA -> 2D projection for scatter plot
 ```
 
 ```
 frontend/src/
-â”œâ”€â”€ App.jsx                 # Step router + encode bar + live token count
-â”œâ”€â”€ store/useVizStore.js    # Zustand global state (data, step, error)
-â”œâ”€â”€ api/client.js           # Axios + VITE_API_BASE_URL env support
-â””â”€â”€ components/
-    â”œâ”€â”€ StepStepper.jsx     # 9-pill navigator + keyboard (â†â†’) + progress bar
-    â”œâ”€â”€ TokenView.jsx       # Pills + D3 histogram on click
-    â”œâ”€â”€ AttentionHeatmap.jsx# D3 heatmap + layer/head selectors (role="tablist")
-    â”œâ”€â”€ EmbeddingBar.jsx    # 384-dim bar charts
-    â”œâ”€â”€ PoolingAnim.jsx     # Framer-motion collapse animation
-    â”œâ”€â”€ SimilarityView.jsx  # D3 cosine dial + UMAP scatter
-    â”œâ”€â”€ InfoCard.jsx        # Expandable â“˜ plain-language explanations
-    â””â”€â”€ Skeleton.jsx        # Shimmer placeholders during API loading
+|-- App.jsx                  # Step router + encode bar + live token count
+|-- store/useVizStore.js     # Zustand global state (data, step, error)
+|-- api/client.js            # Axios + VITE_API_BASE_URL env support
+`-- components/
+    |-- StepStepper.jsx      # 9-pill navigator + keyboard (<- ->) + progress bar
+    |-- TokenView.jsx        # Pills + D3 histogram on click
+    |-- AttentionHeatmap.jsx # D3 heatmap + layer/head selectors (role=tablist)
+    |-- EmbeddingBar.jsx     # 384-dim bar charts
+    |-- PoolingAnim.jsx      # Framer-motion collapse animation
+    |-- SimilarityView.jsx   # D3 cosine dial + UMAP scatter
+    |-- InfoCard.jsx         # Expandable plain-language explanations
+    `-- Skeleton.jsx         # Shimmer placeholders during API loading
 ```
 
 ---
